@@ -173,7 +173,12 @@ const startEndpoint = (endpoint, config, args) => {
 			localAddress = details;
 		} else if (typeof details === 'object' && details.port) {
 			const address = details.address === '::' ? 'localhost' : details.address;
-			const {address: ip} = await lookup(os.hostname());
+			const hostname = address === 'localhost' ? address : os.hostname();
+			const {address: ip} = await lookup(hostname)
+				.catch(err => {
+			    console.error(error(`Not able to complete DNS lookup for ${hostname}: ${err.message}`));
+			    process.exit(1);
+				});
 
 			localAddress = `http://${address}:${details.port}`;
 			networkAddress = `http://${ip}:${details.port}`;
